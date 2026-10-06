@@ -7,6 +7,8 @@ FROM node:24-bookworm-slim AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DATABASE_URL="postgresql://ran:build-only@localhost:5432/ran?schema=public"
+ARG NEXT_PUBLIC_SITE_URL=http://localhost:3000
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate

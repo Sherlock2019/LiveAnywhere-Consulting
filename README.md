@@ -62,9 +62,9 @@ Override both values through environment variables before any public deployment.
 
 1. Launch an Ubuntu 24.04 EC2 instance with at least 2 vCPU / 4 GB RAM for image builds.
 2. Allow inbound SSH only from your administration IP. Allow HTTP/HTTPS from the internet.
-3. Run `deploy/ec2-bootstrap.sh`, reconnect, clone/copy this repository, and create `.env` from `.env.example` with production secrets and the public `NEXT_PUBLIC_SITE_URL`.
-4. Start with `docker compose up -d --build`.
-5. Put Nginx in front using `deploy/nginx.conf.example`, replace the domain, and issue a TLS certificate (for example with Certbot).
+3. Clone this repository, run `deploy/ec2-bootstrap.sh` (installs Docker and Nginx, proxies port 80 to the app), then log out and back in.
+4. Run `./start.sh deploy`. On first run it writes `.env` with a generated `AUTH_SECRET` and `POSTGRES_PASSWORD`, sets `NEXT_PUBLIC_SITE_URL` to the instance's public IP (override with `SITE_URL=https://your.domain ./start.sh deploy`), starts the containers and waits for the app to respond.
+5. For a domain, set `server_name` in `/etc/nginx/sites-available/ran` and issue a TLS certificate (for example with Certbot).
 6. For production, move PostgreSQL to Amazon RDS, keep the database private, store secrets in AWS Systems Manager Parameter Store or Secrets Manager, send logs to CloudWatch, and back up the database.
 
 The included Compose database is suitable for a self-contained demo, not the recommended production data tier.
