@@ -12,14 +12,14 @@ Relocate Anywhere Network (RAN) is the consumer relocation platform for LiveAnyw
 - Filterable mock housing and job marketplaces
 - Services, pricing, corporate, partners, intent and SEO pages
 - Interactive customer-dashboard and admin demonstrations
-- Auth.js credentials demo, PostgreSQL schema, migration/seed workflow and Docker packaging
+- PostgreSQL schema, migration/seed workflow and Docker packaging
 - English-first copy with locale-aware architecture ready for Vietnamese content
 
 Immigration information is general information, not legal advice. Production launch requires qualified counsel, current official-source verification, real partner vetting and a security review.
 
 ## Run with Docker
 
-1. Copy `.env.example` to `.env` and replace `POSTGRES_PASSWORD`/`AUTH_SECRET` values (add `POSTGRES_PASSWORD` to `.env`).
+1. Copy `.env.example` to `.env` and set a `POSTGRES_PASSWORD` value.
 2. Start the application:
 
    ```bash
@@ -51,19 +51,12 @@ npm run build
 npm run lint
 ```
 
-## Demo credentials
-
-- Email: `demo@liveanywhere.consulting`
-- Password: `DemoMove2027!`
-
-Override both values through environment variables before any public deployment.
-
 ## AWS EC2 deployment
 
 1. Launch an Ubuntu 24.04 EC2 instance with at least 2 vCPU / 4 GB RAM for image builds.
 2. Allow inbound SSH only from your administration IP. Allow HTTP/HTTPS from the internet.
 3. Clone this repository, run `deploy/ec2-bootstrap.sh` (installs Docker and Nginx, proxies port 80 to the app), then log out and back in.
-4. Run `./start.sh deploy`. On first run it writes `.env` with a generated `AUTH_SECRET` and `POSTGRES_PASSWORD`, sets `NEXT_PUBLIC_SITE_URL` to the instance's public IP (override with `SITE_URL=https://your.domain ./start.sh deploy`), starts the containers and waits for the app to respond.
+4. Run `./start.sh deploy`. On first run it writes `.env` with a generated `POSTGRES_PASSWORD`, sets `NEXT_PUBLIC_SITE_URL` to the instance's public IP (override with `SITE_URL=https://your.domain ./start.sh deploy`), starts the containers and waits for the app to respond.
 5. For a domain, set `server_name` in `/etc/nginx/sites-available/ran` and issue a TLS certificate (for example with Certbot).
 6. For production, move PostgreSQL to Amazon RDS, keep the database private, store secrets in AWS Systems Manager Parameter Store or Secrets Manager, send logs to CloudWatch, and back up the database.
 

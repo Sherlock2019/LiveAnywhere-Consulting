@@ -2,8 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { ArrowRightLeft, Check, FileClock, Globe2, HeartHandshake, Mail, MapPin, Plane, Save, Search, ShieldCheck, Sparkles, UsersRound } from "lucide-react";
 import { cities, countries, countryById } from "@/data/countries";
@@ -86,21 +84,6 @@ export function AdminPage() {
   const [saved, setSaved] = useState(false);
   const route = visaRoutes.find((item) => item.id === selected)!;
   return <><PageHero eyebrow="Admin demo" title="Keep time-sensitive relocation information accountable." description="This development surface demonstrates source dates, review states and audit requirements. Production access must be role-gated." /><section className="section"><div className="container admin-layout"><aside><h2>Content</h2>{["Countries", "Cities", "Visa routes", "Official sources", "Properties", "Jobs", "Partners", "Pricing", "Customers", "Audit log"].map((item) => <button className={item === "Visa routes" ? "is-active" : ""} key={item}>{item}</button>)}</aside><div className="admin-panel"><div className="panel-head"><div><p className="eyebrow">Visa route editor</p><h2>Verification and source controls</h2></div><Badge variant="review">Demo only</Badge></div><label><span>Select route</span><select value={selected} onChange={(event) => { setSelected(event.target.value); setSaved(false); }}>{visaRoutes.map((item) => <option key={item.id} value={item.id}>{item.destinationCountry.toUpperCase()} · {item.routeName}</option>)}</select></label><div className="admin-form"><label><span>Public title</span><input defaultValue={route.routeName} key={`${route.id}-name`} /></label><label><span>Status</span><select defaultValue={route.status} key={`${route.id}-status`}><option>ACTIVE</option><option>REQUIRES_REVIEW</option><option>PROPOSED</option><option>SUSPENDED</option><option>CLOSED</option></select></label><label><span>Last verified</span><input type="date" defaultValue={route.lastVerified} key={`${route.id}-date`} /></label><label><span>Official source</span><input defaultValue={route.officialSources[0].url} key={`${route.id}-url`} /></label><label className="full"><span>Change reason</span><textarea rows={4} placeholder="Required for the audit log" /></label></div><div className="admin-warning"><FileClock /><p>Every production change should record the user, old value, new value, timestamp and official source.</p></div><Button onClick={() => setSaved(true)}><Save /> {saved ? "Demo change saved" : "Save with audit record"}</Button></div></div></section></>;
-}
-
-export function SignInPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("demo@liveanywhere.consulting");
-  const [password, setPassword] = useState("DemoMove2027!");
-  const [error, setError] = useState("");
-  const submit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setError("");
-    const result = await signIn("credentials", { email, password, redirect: false });
-    if (result?.error) setError("Use the supplied demo credentials or configure your environment values.");
-    else router.push("/dashboard");
-  };
-  return <section className="sign-in-page"><form onSubmit={submit}><Badge variant="possible">Demo access</Badge><h1>Welcome back</h1><p>Open your move dashboard and continue where you left off.</p><label><span>Email</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} /></label><label><span>Password</span><input type="password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>{error ? <p className="form-error">{error}</p> : null}<Button type="submit">Sign in</Button><small>Demo credentials are prefilled. Replace them before production.</small></form></section>;
 }
 
 export function MoveRoutePage({ originId, destinationId }: { originId: string; destinationId: string }) {

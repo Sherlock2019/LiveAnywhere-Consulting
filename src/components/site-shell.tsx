@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, Play, X } from "lucide-react";
 import { useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
+import { DemoTourBar, useDemoTour } from "@/components/demo-tour";
 import { RaniAssistant } from "@/components/rani";
 import { Button } from "@/components/ui/button";
 
@@ -29,6 +30,7 @@ const footerGroups = [
 export function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const tour = useDemoTour();
 
   return (
     <>
@@ -42,7 +44,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
           <div className="site-header__actions">
-            <Button asChild variant="ghost" size="sm" className="sign-in"><Link href="/sign-in">Sign in</Link></Button>
+            <Button variant="secondary" size="sm" className="run-demo" onClick={() => { setMobileOpen(false); tour.start(); }}><Play /> Run demo</Button>
             <Button asChild variant="gold" size="sm" className="start-move"><Link href="/plan">Start my move</Link></Button>
             <button className="mobile-menu-button" onClick={() => setMobileOpen((value) => !value)} aria-expanded={mobileOpen} aria-controls="mobile-nav" aria-label={mobileOpen ? "Close menu" : "Open menu"}>
               {mobileOpen ? <X /> : <Menu />}
@@ -51,7 +53,6 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
         </div>
         <nav className={`mobile-nav ${mobileOpen ? "is-open" : ""}`} id="mobile-nav" aria-label="Mobile navigation">
           {primaryNav.map(([label, href]) => <Link key={href} href={href} onClick={() => setMobileOpen(false)}>{label}</Link>)}
-          <Link href="/sign-in" onClick={() => setMobileOpen(false)}>Sign in</Link>
           <Button asChild variant="gold"><Link href="/plan" onClick={() => setMobileOpen(false)}>Start my move</Link></Button>
         </nav>
       </header>
@@ -75,6 +76,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
           <p>© {new Date().getFullYear()} LiveAnywhere Consulting · English · Tiếng Việt (coming next)</p>
         </div>
       </footer>
+      <DemoTourBar tour={tour} />
       <RaniAssistant />
       <div className="mobile-bottom-cta"><Button asChild variant="gold"><Link href="/plan">Start my move</Link></Button></div>
     </>

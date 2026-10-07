@@ -19,7 +19,6 @@ import {
   PricingPage,
   SeoIntentPage,
   ServicesPage,
-  SignInPage,
   VisasPage,
   PageHero,
 } from "@/components/content-pages";
@@ -54,7 +53,6 @@ export default async function DynamicPage({ params }: PageProps) {
   if (root === "contact") return <ContactPage />;
   if (root === "dashboard") return <DashboardPage />;
   if (root === "admin") return <AdminPage />;
-  if (root === "sign-in") return <SignInPage />;
   if (root === "move" && second && third) return <MoveRoutePage originId={second} destinationId={third} />;
   if (["move-to-vietnam", "move-to-usa", "retire-in-vietnam", "work-in-vietnam", "invest-in-vietnam", "vietnam-visa-for-americans", "usa-visa-for-vietnamese"].includes(root)) return <SeoIntentPage slug={root} />;
   return <NotFoundContent />;

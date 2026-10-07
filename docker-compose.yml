@@ -25,10 +25,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://ran:${POSTGRES_PASSWORD:-change-me-before-production}@db:5432/ran?schema=public
-      AUTH_SECRET: ${AUTH_SECRET:-replace-with-a-long-random-secret}
-      AUTH_TRUST_HOST: "true"
       DEMO_USER_EMAIL: ${DEMO_USER_EMAIL:-demo@liveanywhere.consulting}
-      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD:-DemoMove2027!}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
     ports:
       - "${APP_PORT:-3000}:3000"

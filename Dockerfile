@@ -1,9 +1,15 @@
-FROM node:24-bookworm-slim AS dependencies
+# OpenSSL in every stage so Prisma installs the engine matching the runtime
+# image; otherwise it tries to download one at startup into read-only node_modules.
+FROM node:24-bookworm-slim AS base
+RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false
+
+FROM base AS dependencies
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install
 
-FROM node:24-bookworm-slim AS builder
+FROM base AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DATABASE_URL="postgresql://ran:build-only@localhost:5432/ran?schema=public"
@@ -14,7 +20,7 @@ COPY . .
 RUN npx prisma generate
 RUN npm run build
 
-FROM node:24-bookworm-slim AS runner
+FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1

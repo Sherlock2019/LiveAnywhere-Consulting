@@ -7,7 +7,9 @@
 #   ./start.sh deploy     server/EC2 deploy: generate secrets, compose up -d, health check
 #   ./start.sh stop       stop compose stack and the dev database container
 #
-# Extra arguments are passed through, e.g. ./start.sh dev -p 4000
+# dev and prod listen on all interfaces and honour PORT (default 3000) and
+# PUBLIC_HOST (public IP or domain; detected automatically on EC2).
+# Extra arguments are passed through, e.g. ./start.sh dev --webpack
 # deploy honours SITE_URL (public URL) and APP_PORT (host port, default 3000).
 
 set -euo pipefail
@@ -25,7 +27,7 @@ die() { printf '\033[1;31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 ensure_env() {
   if [ ! -f .env ]; then
     cp .env.example .env
-    log "Created .env from .env.example (replace the placeholder secrets before deploying)"
+    log "Created .env from .env.example (set a real database password before deploying)"
   fi
 }
 
@@ -155,15 +157,12 @@ ec2_public_ip() {
 # First deploy: write .env with generated secrets and the public URL.
 ensure_deploy_env() {
   if [ -f .env ]; then
-    grep -q '^AUTH_SECRET="\?replace-with' .env \
-      && warn ".env still has the placeholder AUTH_SECRET; replace it before exposing this server"
     [ -z "${SITE_URL:-}" ] || set_env_var NEXT_PUBLIC_SITE_URL "$SITE_URL"
     return 0
   fi
 
   cp .env.example .env
   chmod 600 .env
-  set_env_var AUTH_SECRET "$(rand_hex 32)"
   # An existing data volume was initialised with the old password; keep it.
   if docker volume ls -q | grep -q '_ran_postgres$'; then
     warn "Existing database volume found; not generating a new POSTGRES_PASSWORD"
@@ -188,18 +187,37 @@ http_ok() {
   fi
 }
 
+# Run an npm server script (dev/start) on all interfaces. Uses PORT (default
+# 3000) or the next free port, and announces the public URL when on EC2.
+serve() {
+  local script="$1"; shift
+  local want="${PORT:-3000}" port host
+  port="$want"
+  while port_open 127.0.0.1 "$port"; do port=$((port + 1)); done
+  [ "$port" = "$want" ] \
+    || warn "Port $want is in use; using $port (free it with ./start.sh stop, or set PORT)"
+
+  host="${PUBLIC_HOST:-$(ec2_public_ip)}"
+  if [ -n "$host" ]; then
+    # next.config.ts allows this host to load dev-server resources.
+    export PUBLIC_HOST="$host"
+    log "Starting on http://$host:$port (the EC2 security group must allow inbound TCP $port)"
+  else
+    log "Starting on http://localhost:$port"
+  fi
+  exec npm run "$script" -- -H 0.0.0.0 -p "$port" "$@"
+}
+
 case "$MODE" in
   dev)
     prepare
-    log "Starting dev server on http://localhost:3000"
-    exec npm run dev -- "$@"
+    serve dev "$@"
     ;;
   prod)
     prepare
     log "Building"
     npm run build
-    log "Starting production server on http://localhost:3000"
-    exec npm run start -- "$@"
+    serve start "$@"
     ;;
   docker)
     require_docker
